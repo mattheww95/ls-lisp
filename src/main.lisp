@@ -1,4 +1,5 @@
 (ql:quickload :osicat)
+(ql:quickload :unix-opts)
 (defpackage ls-lisp
   (:use :cl))
 (in-package :ls-lisp)
@@ -11,13 +12,23 @@
 
 (defun list-directories (path)
   "Return a list off all files and directories"
-  (if (uiop:directory-exists-p path)
-      (cons path (uiop:directory-files path))
-      `()))
+  (let* ((fp (uiop:native-namestring path))
+         (fpt (uiop:native-namestring
+               (concatenate `string fp "/"))))
+    (if (or (uiop:directory-exists-p fp) (uiop:file-exists-p fp))
+        (cons fp (append (uiop:directory-files fp) (uiop:subdirectories fp)))
+        (if
+         (uiop:directory-exists-p fpt)
+         (cons fpt (append (uiop:directory-files fpt) (uiop:subdirectories fpt)))
+         `()))))
 
+(print (uiop:p "/home"))
 
+(print (uiop:subdirectories (uiop:native-namestring "~/")))
+(print (list-directories #p"~/"))
 (print (list-directories #p"~"))
 (print (list-directories #p"/home/"))
+(print (list-directories #p"/home"))
 
 
 (defun access-octal-to-text (number)
@@ -51,4 +62,18 @@
             (osicat-posix:stat-size stat)
             file-name)))
 
-(mapcar #'get-file-dir-info (list-directories #P"/home/"))
+(defun print-dir-info (fp)
+  "Print all of the info for a supplied directory"
+  (handler-case (mapcar #'get-file-dir-info (list-directories fp))
+    (osicat-posix:enoent ()
+      `())))
+
+(print-dir-info "~/")
+(print-dir-info "~")
+(print-dir-info #P"/home/")
+
+(opts:define-opts
+  (:name :help
+   :description "list files and directories"
+   :short #\h
+   :long "help"))
