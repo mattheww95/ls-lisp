@@ -6,6 +6,7 @@
 ;; mimic the ls behaviour in lisp
 
 ;;; TODO Need to add wild card, and symbol support
+;;; TODO support symlinks
 ;;; TODO add ansi control schemes to colourize outputs
 
 (defun list-directories (path)
