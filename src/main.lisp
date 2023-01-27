@@ -10,25 +10,35 @@
 ;;; TODO support symlinks
 ;;; TODO add ansi control schemes to colourize outputs
 
+(defun combine-directories (fp)
+  "Gather and list all files and directories"
+  (let ((path fp))
+    (cons path (append (uiop:directory-files path) (uiop:subdirectories path)))))
+
+
+(defun normalize-directory-name (dir)
+   "append a path delimiter to the end fo a directory if there is not one"
+  (if (and (> (length dir) 1) (char-equal (char dir (- (length dir) 1)) (uiop:directory-separator-for-host)))
+      dir
+      (if (char-equal (char dir (- (length dir) 1)) (uiop:directory-separator-for-host))
+          dir
+          (concatenate `string dir (format nil "~a" (uiop:directory-separator-for-host))))))
+
+
 (defun list-directories (path)
   "Return a list off all files and directories"
-  (let* ((fp (uiop:native-namestring path))
-         (fpt (uiop:native-namestring
-               (concatenate `string fp "/"))))
-    (if (or (uiop:directory-exists-p fp) (uiop:file-exists-p fp))
-        (cons fp (append (uiop:directory-files fp) (uiop:subdirectories fp)))
-        (if
-         (uiop:directory-exists-p fpt)
-         (cons fpt (append (uiop:directory-files fpt) (uiop:subdirectories fpt)))
-         `()))))
+  (let* ((fp (normalize-directory-name path))
+         (fpt (uiop:native-namestring fp)))
+    (if (or (uiop:directory-exists-p fpt) (uiop:file-exists-p fpt))
+        (combine-directories fpt)
+        `())))
 
-(print (uiop:p "/home"))
 
-(print (uiop:subdirectories (uiop:native-namestring "~/")))
-(print (list-directories #p"~/"))
-(print (list-directories #p"~"))
-(print (list-directories #p"/home/"))
-(print (list-directories #p"/home"))
+(print (uiop:subdirectories (uiop:native-namestring "~")))
+(print (list-directories "~"))
+(print (list-directories "~/"))
+(print (list-directories "/home/"))
+(print (list-directories "/home"))
 
 
 (defun access-octal-to-text (number)
