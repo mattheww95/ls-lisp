@@ -36,6 +36,7 @@
 
 (print (uiop:subdirectories (uiop:native-namestring "~")))
 (print (list-directories "~"))
+(print (list-directories "/"))
 (print (list-directories "~/"))
 (print (list-directories "/home/"))
 (print (list-directories "/home"))
